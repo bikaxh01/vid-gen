@@ -1,0 +1,26 @@
+{
+  "name": "worker",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon ./src/index.ts",
+    "build": "tsc -b",
+    "start": "node ./dist/src/index.js"
+  },
+  "dependencies": {
+    "@google/genai": "^0.14.1",
+    "@repo/db": "*",
+    "body-parser": "^2.2.0",
+    "dotenv": "^16.5.0"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "@types/express": "^5.0.1",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
