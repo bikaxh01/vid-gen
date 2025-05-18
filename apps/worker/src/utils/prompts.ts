@@ -116,8 +116,61 @@ Use the following details to generate your Manim scene:
 - **Visual Elements**: ${JSON.stringify(sceneDetail.visualElements)}
 
 ---
-**Reminder**: Only generate the Python class for the above scene. Do not include extra imports, unrelated scene logic, or comments about other scenes.
+**Reminder**: Only generate the Python class for the above scene. And add from manim import * at the top.
 `;
 
+  return prompt;
+}
+
+export function fixCodePrompt(error: string, currentCode: string) {
+  const prompt = `You are a highly capable, AI-powered Python developer with deep expertise in writing clean, optimized, and visually appealing **Manim** code. You will be provided with a manim code and error that has been occured error while compiling and you task is to fix the code and you will fixing the code do not make any theme change just fix the error and do not do any thing extra .
+
+---
+
+**Your Responsibilities**:
+- All scenes are generated independently, so **focus only on the scene passed to you**.
+- Fix the **provided Manim scene class** based on the error message.
+- Do **not** reference or include logic from other scenes.
+- Scenes are generated independently — focus only on the code given.
+- Do not change the class name make sure the class name should be same 
+
+---
+
+Note: you have  provided a empty python template you have add only this import on top of the class 
+- from manim import *
+
+
+ **Guidelines**:
+- Follow the provided **color scheme**, **animation types**, and **visual elements** precisely.
+- Do  include  import manim.
+- Only generate a **Python class** for the scene:
+- The class name should contain sequence and title  of scene  EG:(01_introduction)
+- The current version of manim is v0.19.0.
+- Do not user color name instead use Hex code
+- Do not use any third party library
+- Do not change the class name make sure the class name should be same 
+- Ensure the class is:
+  - Self-contained  
+  - Visually engaging  
+  - Aligned with the description  
+  - Bug-free and production-ready
+- **Do not use** third-party libraries, external assets, or SVGs.
+
+---
+
+**Error that has been occured while compiling the code**  
+ ${error}
+---
+
+**Scene Code**  
+
+${currentCode}
+
+
+
+
+---
+**Reminder**: Only edit  the Python class for the above scene. And add from manim import * at the top.
+`;
   return prompt;
 }

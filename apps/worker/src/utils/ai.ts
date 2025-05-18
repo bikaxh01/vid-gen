@@ -1,4 +1,5 @@
 import {
+  fixCodePrompt,
   generateScenePrompt,
   generateScenesDescriptionPrompt,
 } from "./prompts";
@@ -9,7 +10,8 @@ import path from "path";
 import { exec, spawn } from "child_process";
 import { config } from "dotenv";
 import { GEMINI_API_KEY } from "./env";
-
+import { promisify } from "util";
+const execPromise = promisify(exec);
 config();
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
@@ -183,9 +185,15 @@ export async function compileScenes(file: any[]) {
 
 async function fixCode(error: any, fileMetaData: any) {
   let isError = true;
+  let count = 1;
 
   while (isError) {
+    if(count >=5 ){
+      break;
+    }
     isError = await fixCodeAndCompile(error, fileMetaData);
+    count++;
+   
   }
 }
 
@@ -197,16 +205,52 @@ async function fixCodeAndCompile(error: string, fileMetaData: any) {
     "python",
     `${fileMetaData.name}`
   );
-  //read file
+  const currentCode = await fs.readFile(filePath, "utf-8");
 
-  const previousCode = await fs.readFile(filePath,"utf-8");
-  console.log("🚀 ~ fixCodeAndCompile ~ previousCode:", previousCode);
-  return false;
   // pass to llm to fix the code
-  // get the final code
-  // update the same file
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-pro-preview-05-06",
+    contents: fixCodePrompt(error, currentCode),
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.ARRAY,
+        description: "fixed code of scene",
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            code: {
+              type: Type.STRING,
+              description: "scene main code of scene",
+            },
+          },
+          required: ["code"],
+        },
+      },
+    },
+  });
+
+  //@ts-ignore
+  const fixedCode = JSON.parse(response.text)[0].code;
+
+  await fs.writeFile(filePath, `\n${fixedCode}`);
+
   // compile the code
+
+  try {
+    const { stdout, stderr } = await execPromise(`manim -qh ${filePath}`);
+
+    if (stderr) {
+      console.log("🚀 ~ exec ~ stderr (warnings?):", stderr);
+    }
+
+    console.log("Bug fixed and compiled successfully");
+    return false;
+  } catch (error) {
+    console.log("🚀 ~ fixCodeAndCompile ~ error:", error);
+    return true;
+  }
+
   // update db status
   // return is compiled
 }
-
