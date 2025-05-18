@@ -47,21 +47,14 @@ app.post("/generate-video", async (req: Request, res: Response) => {
 
 async function main() {
   const prompt = "generate video on kafka vs redis";
-  // const scenesDetail = await generateSceneDescription(prompt);
-  // const compileCommands = [];
-  // for (const sceneConfig of scenesDetail) {
-  //   const scene = await generateScene(sceneConfig, scenesDetail);
-  //   compileCommands.push(scene);
-  // }
+  const scenesDetail = await generateSceneDescription(prompt);
+  const compileCommands = [];
+  for (const sceneConfig of scenesDetail) {
+    const scene = await generateScene(sceneConfig, scenesDetail);
+    compileCommands.push({ name: scene });
+  }
 
-  compileScenes([
-    {
-      name: "S01_IntroductionKafkaVsRedis.py",
-    },
-    {
-      name: "Scene02SideBySideComparisonSetup.py",
-    },
-  ]);
+  const isCompiled = compileScenes(compileCommands);
 }
 
 main();

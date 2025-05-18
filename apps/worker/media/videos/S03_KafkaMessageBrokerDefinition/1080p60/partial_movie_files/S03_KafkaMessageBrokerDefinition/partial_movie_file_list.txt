@@ -1,0 +1,7 @@
+# This file is used internally by FFMPEG.
+file 'file:D:/projects/video-gen/apps/worker/media/videos/S03_KafkaMessageBrokerDefinition/1080p60/partial_movie_files/S03_KafkaMessageBrokerDefinition/1795506644_2052077886_223132457.mp4'
+file 'file:D:/projects/video-gen/apps/worker/media/videos/S03_KafkaMessageBrokerDefinition/1080p60/partial_movie_files/S03_KafkaMessageBrokerDefinition/4079769724_3394500337_1296557192.mp4'
+file 'file:D:/projects/video-gen/apps/worker/media/videos/S03_KafkaMessageBrokerDefinition/1080p60/partial_movie_files/S03_KafkaMessageBrokerDefinition/4079769724_2889912538_4173114970.mp4'
+file 'file:D:/projects/video-gen/apps/worker/media/videos/S03_KafkaMessageBrokerDefinition/1080p60/partial_movie_files/S03_KafkaMessageBrokerDefinition/4079769724_4217992463_3664299531.mp4'
+file 'file:D:/projects/video-gen/apps/worker/media/videos/S03_KafkaMessageBrokerDefinition/1080p60/partial_movie_files/S03_KafkaMessageBrokerDefinition/4079769724_376488278_523653573.mp4'
+file 'file:D:/projects/video-gen/apps/worker/media/videos/S03_KafkaMessageBrokerDefinition/1080p60/partial_movie_files/S03_KafkaMessageBrokerDefinition/4079769724_2844360058_3452624197.mp4'

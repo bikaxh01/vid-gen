@@ -57,7 +57,7 @@ export async function generateScene(
 
   //@ts-ignore
   const scene: SceneProperties = JSON.parse(response.text)[0];
-  console.log("🚀 ~ scene:", scene);
+
 
   // write in file
   const filePath = path.join(
@@ -252,5 +252,5 @@ async function fixCodeAndCompile(error: string, fileMetaData: any) {
   }
 
   // update db status
-  // return is compiled
+
 }

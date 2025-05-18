@@ -95,7 +95,7 @@ Note: you have  provided a empty python template you have add only this import o
   - Aligned with the description  
   - Bug-free and production-ready
 - **Do not use** third-party libraries, external assets, or SVGs.
-
+- Do not add any special character like (\n)
 ---
 
 **All Scene Configurations**  
@@ -133,6 +133,7 @@ export function fixCodePrompt(error: string, currentCode: string) {
 - Do **not** reference or include logic from other scenes.
 - Scenes are generated independently — focus only on the code given.
 - Do not change the class name make sure the class name should be same 
+- Do not add any special character like (\n)
 
 ---
 
