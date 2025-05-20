@@ -24,27 +24,42 @@ model user {
 }
 
 model project {
-  id            String   @id @default(uuid())
-  title         String?
+  id            String         @id @default(uuid())
+  prompt        String
   userId        String
   finalVideoUrl String?
-  sceneFlow     Json ?
-  user          user     @relation(references: [id], fields: [userId])
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  sceneFlow     String?
+  totalScene   Int?
+  user          user           @relation(references: [id], fields: [userId])
+  createdAt     DateTime       @default(now())
+  status        PROJECT_STATUS
+  updatedAt     DateTime       @updatedAt
   scene         scene[]
 }
 
-
+enum PROJECT_STATUS {
+  QUEUED
+  PLAINNING
+  GENERATING_SCENES
+  COMPLETED
+}
 
 model scene {
   id          String   @id @default(uuid())
-  sequence    String
+  sequence    Int
   title       String
   description String
+  className   String
   code        String
+  status  SCENE_STATUS
   projectId   String
   project     project  @relation(references: [id], fields: [projectId])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+enum SCENE_STATUS {
+  PENDING
+  ERROR_REGENERATING
+  COMPLETED
 }

@@ -1,7 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:D:/projects/video-gen/apps/worker/media/videos/Scene04RedisInMemoryDataStoreDefinition/1080p60/partial_movie_files/Scene04RedisInMemoryDataStoreDefinition/3773925863_653882226_223132457.mp4'
-file 'file:D:/projects/video-gen/apps/worker/media/videos/Scene04RedisInMemoryDataStoreDefinition/1080p60/partial_movie_files/Scene04RedisInMemoryDataStoreDefinition/3581714469_3394500337_1879817330.mp4'
-file 'file:D:/projects/video-gen/apps/worker/media/videos/Scene04RedisInMemoryDataStoreDefinition/1080p60/partial_movie_files/Scene04RedisInMemoryDataStoreDefinition/3581714469_3563054562_693594161.mp4'
-file 'file:D:/projects/video-gen/apps/worker/media/videos/Scene04RedisInMemoryDataStoreDefinition/1080p60/partial_movie_files/Scene04RedisInMemoryDataStoreDefinition/3581714469_4217992463_1498226633.mp4'
-file 'file:D:/projects/video-gen/apps/worker/media/videos/Scene04RedisInMemoryDataStoreDefinition/1080p60/partial_movie_files/Scene04RedisInMemoryDataStoreDefinition/3581714469_694971615_1016527670.mp4'
-file 'file:D:/projects/video-gen/apps/worker/media/videos/Scene04RedisInMemoryDataStoreDefinition/1080p60/partial_movie_files/Scene04RedisInMemoryDataStoreDefinition/3581714469_2844360058_567361296.mp4'

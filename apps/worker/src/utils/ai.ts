@@ -11,13 +11,15 @@ import { exec, spawn } from "child_process";
 import { config } from "dotenv";
 import { GEMINI_API_KEY } from "./env";
 import { promisify } from "util";
+import { prisma } from "@repo/db/prismaClient.ts";
 const execPromise = promisify(exec);
 config();
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 export async function generateScene(
   sceneDetail: SceneConfig,
-  scriptDetail: SceneConfig[]
+  scriptDetail: SceneConfig[],
+  projectId: string
 ) {
   const response = await ai.models.generateContent({
     model: "gemini-2.5-pro-preview-05-06",
@@ -58,7 +60,6 @@ export async function generateScene(
   //@ts-ignore
   const scene: SceneProperties = JSON.parse(response.text)[0];
 
-
   // write in file
   const filePath = path.join(
     __dirname,
@@ -68,12 +69,28 @@ export async function generateScene(
     `${scene.className}.py`
   );
 
-  await fs.writeFile(filePath, `\n${scene.code}`);
-  const compileCommand = `${scene.className}.py`;
+  const sceneData = await prisma.scene.create({
+    data: {
+      status: "COMPLETED",
+      sequence: sceneDetail.sequence,
+      code: scene.code,
+      description: scene.description,
+      title: scene.sceneTitle,
+      projectId,
+      className: scene.className,
+    },
+  });
 
+  await fs.writeFile(filePath, `\n${scene.code}`);
+  const metadata = {
+    name: `${scene.className}.py`,
+    sceneId: sceneData.id,
+    sceneSequence: sceneData.sequence,
+  };
+  console.log(`Scenes ${sceneDetail.sequence} code Completed 🟢🟢`);
   // save each file metadata to db status = code_generated
 
-  return compileCommand;
+  return metadata;
 }
 
 export async function generateSceneDescription(userPrompt: string) {
@@ -154,6 +171,7 @@ export async function generateSceneDescription(userPrompt: string) {
 
   //@ts-ignore
   const scenesDetail: SceneConfig[] = JSON.parse(response.text);
+  console.log("Scenes Description Completed 🟢🟢");
 
   return scenesDetail;
 }
@@ -171,13 +189,17 @@ export async function compileScenes(file: any[]) {
     // compile each
     exec(`manim -qh ${filePath} `, (error, stdout, stderr) => {
       if (error) {
-        console.error(`exec error In code `);
+        console.error(
+          `Error while compiling scene ${fileMetaData.sceneSequence} 🔴 but marking as `
+        );
 
         // fix the code
         fixCode(error, fileMetaData);
         return;
       }
-      console.log(`compiled success`);
+      console.log(
+        `successfully   compilled scene ${fileMetaData.sceneSequence} 🟢 `
+      );
       if (stderr != "") console.error(`stderr: ${stderr}`);
     });
   });
@@ -185,15 +207,20 @@ export async function compileScenes(file: any[]) {
 
 async function fixCode(error: any, fileMetaData: any) {
   let isError = true;
+  let updatedError = error;
   let count = 1;
 
   while (isError) {
-    if(count >=5 ){
+    if (count >= 5) {
       break;
     }
-    isError = await fixCodeAndCompile(error, fileMetaData);
+    const { stillError, errorStr } = await fixCodeAndCompile(
+      updatedError,
+      fileMetaData
+    );
+    isError = stillError;
+    updatedError = errorStr;
     count++;
-   
   }
 }
 
@@ -206,7 +233,7 @@ async function fixCodeAndCompile(error: string, fileMetaData: any) {
     `${fileMetaData.name}`
   );
   const currentCode = await fs.readFile(filePath, "utf-8");
-
+  let stillError = false;
   // pass to llm to fix the code
   const response = await ai.models.generateContent({
     model: "gemini-2.5-pro-preview-05-06",
@@ -244,13 +271,21 @@ async function fixCodeAndCompile(error: string, fileMetaData: any) {
       console.log("🚀 ~ exec ~ stderr (warnings?):", stderr);
     }
 
+    await prisma.scene.update({
+      where: {
+        id: fileMetaData.sceneId,
+      },
+      data: {
+        status: "COMPLETED",
+      },
+    });
     console.log("Bug fixed and compiled successfully");
-    return false;
+    return { stillError, errorStr: "" };
   } catch (error) {
     console.log("🚀 ~ fixCodeAndCompile ~ error:", error);
-    return true;
+    stillError = true;
+    return { stillError, errorStr: error };
   }
 
   // update db status
-
 }
