@@ -4,6 +4,7 @@ import {
   compileScenes,
   generateScene,
   generateSceneDescription,
+  mergeScenesAndUpload,
 } from "./utils/ai";
 import { PORT } from "./utils/env";
 import bodyParser from "body-parser";
@@ -49,49 +50,48 @@ app.use(bodyParser.json());
 async function main() {
   const data = {
     projectId: "123456789",
-    prompt: "generate video on kafka vs redis generate",
+    prompt:
+      "make a video  about explaining how web works like client server and other important stuffs make the level should for begineer and intermediate the theme should be in dark and white the video should be 5 min long and that should conver all the topic in detail with example ",
   };
 
-  const scenesDetail = await generateSceneDescription(data.prompt);
+  // const scenesDetail = await generateSceneDescription(data.prompt);
 
-  await prisma.project.update({
-    where: {
-      id: data.projectId,
+  // await prisma.project.update({
+  //   where: {
+  //     id: data.projectId,
+  //   },
+  //   data: {
+  //     sceneFlow: JSON.stringify(scenesDetail),
+  //     totalScene: scenesDetail.length,
+  //   },
+  // });
+
+  // const compileCommands = [];
+  // for (const sceneConfig of scenesDetail) {
+  //   const scene = await generateScene(
+  //     sceneConfig,
+  //     scenesDetail,
+  //     data.projectId
+  //   );
+  //   compileCommands.push(scene);
+  // }
+
+  // [
+  //   {
+  //     name: `Scene10RenderingWebPages.py`,
+  //     sceneId: "c7532f73-987a-4ca2-a588-bd36a80bf238",
+  //     sceneSequence:10,
+  //   },
+  // ]
+  await compileScenes([
+    {
+      name: `Scene10RenderingWebPages.py`,
+      sceneId: "c7532f73-987a-4ca2-a588-bd36a80bf238",
+      sceneSequence:10,
     },
-    data: {
-      sceneFlow: JSON.stringify(scenesDetail),
-      totalScene: scenesDetail.length,
-    },
-  });
+  ]);
 
-  const compileCommands = [];
-  for (const sceneConfig of scenesDetail) {
-    const scene = await generateScene(
-      sceneConfig,
-      scenesDetail,
-      data.projectId
-    );
-    compileCommands.push(scene);
-  }
-
-  const isCompiled = compileScenes(compileCommands);
-  // const isCompiled = compileScenes([
-  //   {
-  //     name: "Scene03KafkaArchitecture.py",
-  //     sceneId: "54654654",
-  //   },
-  //   {
-  //     name: "Scene04_Redis_Architecture.py",
-  //     sceneId: "54654654",
-  //   },
-  //   {
-  //     name: "Scene05UseCases.py",
-  //     sceneId: "54654654",
-  //   },
-  // ]);
-  // merge all scenes
-  // upload
-  // store link
+  //await mergeScenesAndUpload(data.projectId);
 }
 
 main();

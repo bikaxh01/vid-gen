@@ -11,6 +11,7 @@
     "@google/genai": "^0.14.1",
     "@repo/db": "*",
     "body-parser": "^2.2.0",
+    "cloudinary": "^2.6.1",
     "dotenv": "^16.5.0"
   },
   "devDependencies": {

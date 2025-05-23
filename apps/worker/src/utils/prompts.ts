@@ -66,13 +66,14 @@ export function generateScenePrompt(
   sceneDetail: SceneConfig,
   scriptDetail: SceneConfig[]
 ) {
-  const prompt = `You are a highly capable, AI-powered Python developer with deep expertise in writing clean, optimized, and visually appealing **Manim** code. You will be provided with a list of scene configurations, but your task is to generate code for **only one specific scene** based on the details provided under "Scene Configuration".
+  const prompt = `You are a highly capable, AI-powered Python developer with deep expertise in writing clean, optimized, and visually appealing **Manim** code. You will be provided with a list of scene configurations, but your task is to generate latest Manim code for **only one specific scene** based on the details provided under "Scene Configuration".
 
 ---
 
 **Your Responsibilities**:
 - Generate a **Manim scene class** for the specified scene only.
 - **Do not reference or include any details** from other scenes.
+- Make sure to not add any deprecated methods or class
 - All scenes are generated independently, so **focus only on the scene passed to you**.
 
 ---
@@ -87,6 +88,7 @@ Note: you have  provided a empty python template you have add only this import o
 - Only generate a **Python class** for the scene:
 - The class name should contain sequence and title  of scene  EG:(01_introduction)
 - The current version of manim is v0.19.0.
+- Always generate code using the latest stable version of Manim
 - Do not user color name instead use Hex code
 - Do not use any third party library
 - Ensure the class is:
@@ -116,7 +118,7 @@ Use the following details to generate your Manim scene:
 - **Visual Elements**: ${JSON.stringify(sceneDetail.visualElements)}
 
 ---
-**Reminder**: Only generate the Python class for the above scene. And add from manim import * at the top.
+**Reminder**: Only generate the Python class for the above scene. And add from manim import * at the top Always generate code using the latest stable version of Manim.
 `;
 
   return prompt;
@@ -134,6 +136,7 @@ export function fixCodePrompt(error: string, currentCode: string) {
 - Scenes are generated independently — focus only on the code given.
 - Do not change the class name make sure the class name should be same 
 - Do not add any special character like (\n)
+- Make sure to not add any deprecated methods or class
 
 ---
 
@@ -148,8 +151,10 @@ Note: you have  provided a empty python template you have add only this import o
 - The class name should contain sequence and title  of scene  EG:(01_introduction)
 - The current version of manim is v0.19.0.
 - Do not user color name instead use Hex code
+- Make sure to not add any deprecated methods or class
 - Do not use any third party library
 - Do not change the class name make sure the class name should be same 
+- Always generate code using the latest stable version of Manim
 - Ensure the class is:
   - Self-contained  
   - Visually engaging  
@@ -171,7 +176,7 @@ ${currentCode}
 
 
 ---
-**Reminder**: Only edit  the Python class for the above scene. And add from manim import * at the top.
+**Reminder**: Only edit  the Python class for the above scene. And add from manim import * at the top Always generate code using the latest stable version of Manim.
 `;
   return prompt;
 }

@@ -29,7 +29,7 @@ model project {
   userId        String
   finalVideoUrl String?
   sceneFlow     String?
-  totalScene   Int?
+  totalScene    Int?
   user          user           @relation(references: [id], fields: [userId])
   createdAt     DateTime       @default(now())
   status        PROJECT_STATUS
@@ -45,17 +45,18 @@ enum PROJECT_STATUS {
 }
 
 model scene {
-  id          String   @id @default(uuid())
+  id          String       @id @default(uuid())
   sequence    Int
   title       String
   description String
   className   String
   code        String
-  status  SCENE_STATUS
+  url         String?  @default("null")
+  status      SCENE_STATUS
   projectId   String
-  project     project  @relation(references: [id], fields: [projectId])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  project     project      @relation(references: [id], fields: [projectId])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 enum SCENE_STATUS {

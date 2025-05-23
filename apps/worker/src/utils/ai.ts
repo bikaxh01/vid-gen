@@ -11,7 +11,9 @@ import { exec, spawn } from "child_process";
 import { config } from "dotenv";
 import { GEMINI_API_KEY } from "./env";
 import { promisify } from "util";
+import cloudinary from "cloudinary";
 import { prisma } from "@repo/db/prismaClient.ts";
+import { log } from "console";
 const execPromise = promisify(exec);
 config();
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -177,32 +179,33 @@ export async function generateSceneDescription(userPrompt: string) {
 }
 
 export async function compileScenes(file: any[]) {
+  console.log("compiling scenes 🟢");
   // map on each file and compile
-  file.map((fileMetaData: any) => {
-    const filePath = path.join(
-      __dirname,
-      "..",
-      "..",
-      "python",
-      `${fileMetaData.name}`
-    );
-    // compile each
-    exec(`manim -qh ${filePath} `, (error, stdout, stderr) => {
-      if (error) {
-        console.error(
-          `Error while compiling scene ${fileMetaData.sceneSequence} 🔴 but marking as `
-        );
-
-        // fix the code
-        fixCode(error, fileMetaData);
-        return;
-      }
-      console.log(
-        `successfully   compilled scene ${fileMetaData.sceneSequence} 🟢 `
+  await Promise.all(
+    file.map(async (fileMetaData: any) => {
+      const filePath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "python",
+        `${fileMetaData.name}`
       );
-      if (stderr != "") console.error(`stderr: ${stderr}`);
-    });
-  });
+      // compile each
+
+      try {
+        const res = await execPromise(`manim -qh ${filePath} `);
+        console.log(
+          `successfully   compilled scene ${fileMetaData.sceneSequence} 🟢 `
+        );
+      } catch (error) {
+        //fix the code
+        console.error(
+          `Error while compiling scene ${fileMetaData.sceneSequence} 🔴 Fixing it `
+        );
+        await fixCode(error, fileMetaData);
+      }
+    })
+  );
 }
 
 async function fixCode(error: any, fileMetaData: any) {
@@ -212,8 +215,12 @@ async function fixCode(error: any, fileMetaData: any) {
 
   while (isError) {
     if (count >= 5) {
+      console.log('Unable to fix the bug limit reached 🔴');
+      
       break;
     }
+    console.log(`Fixing for ${count} time the error is ${error}`);
+    
     const { stillError, errorStr } = await fixCodeAndCompile(
       updatedError,
       fileMetaData
@@ -259,16 +266,17 @@ async function fixCodeAndCompile(error: string, fileMetaData: any) {
 
   //@ts-ignore
   const fixedCode = JSON.parse(response.text)[0].code;
+  console.log("🚀 ~ fixCodeAndCompile ~ fixedCode updating file:", fixedCode)
 
   await fs.writeFile(filePath, `\n${fixedCode}`);
 
+  
   // compile the code
-
   try {
     const { stdout, stderr } = await execPromise(`manim -qh ${filePath}`);
 
     if (stderr) {
-      console.log("🚀 ~ exec ~ stderr (warnings?):", stderr);
+    //  console.log("🚀 ~ exec ~ stderr (warnings?):", stderr);
     }
 
     await prisma.scene.update({
@@ -282,10 +290,130 @@ async function fixCodeAndCompile(error: string, fileMetaData: any) {
     console.log("Bug fixed and compiled successfully");
     return { stillError, errorStr: "" };
   } catch (error) {
-    console.log("🚀 ~ fixCodeAndCompile ~ error:", error);
+    
     stillError = true;
     return { stillError, errorStr: error };
   }
+}
 
-  // update db status
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+export async function mergeScenesAndUpload(projectId: string) {
+  console.log("Merging scenes 🟢");
+
+  // get all scenes path
+
+  try {
+    const scenes = await prisma.scene.findMany({
+      where: {
+        projectId,
+      },
+      orderBy: {
+        sequence: "asc",
+      },
+      select: {
+        id: true,
+        className: true,
+        sequence: true,
+      },
+    });
+
+    const finalScenesPath = scenes.map((scene) => {
+      const scPath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "media",
+        "videos",
+        `${scene.className}`,
+        "1080p60",
+        `${scene.className}`
+      );
+      return `'${scPath}.mp4'`;
+    });
+
+    // merge all scenes
+    const finalVideoPath = await mergeAllScenes(finalScenesPath);
+
+    const filesToBeUploaded = scenes.map((scene) => {
+      const scPath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "media",
+        "videos",
+        `${scene.className}`,
+        "1080p60",
+        `${scene.className}`
+      );
+      return { id: scene.id, path: `${scPath}.mp4` };
+    });
+
+    const finalPaths = [...filesToBeUploaded, finalVideoPath];
+
+    //  upload all scenes
+    const videoUrls = await Promise.all(
+      finalPaths.map(async (filepath) => {
+        const isFinalVideo = filepath == finalVideoPath;
+        const res = await cloudinary.v2.uploader.upload(filepath.path, {
+          resource_type: "video",
+          folder: `vid-gen/${projectId}`,
+          use_filename: true,
+        });
+        return {
+          url: res.secure_url,
+          isScene: !isFinalVideo,
+          id: filepath.id,
+        };
+      })
+    );
+
+    videoUrls.map(async (sceneUrl) => {
+      if (!sceneUrl.isScene) {
+        // add to project video
+        const project = await prisma.project.update({
+          where: {
+            id: projectId,
+          },
+          data: {
+            finalVideoUrl: sceneUrl.url,
+          },
+        });
+      } else {
+        // add url to scene
+        await prisma.scene.update({
+          where: {
+            id: sceneUrl.id,
+          },
+          data: {
+            url: sceneUrl.url,
+          },
+        });
+      }
+    });
+  } catch (error) {
+    console.log("🚀 ~ mergeScenesAndUpload ~ error:", error);
+  }
+}
+
+async function mergeAllScenes(filePath: string[]) {
+  const ffmpegPath = path.join(__dirname, "..", "..", "final", "concat.txt");
+  const finalOutputPath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "final",
+    "final.mp4"
+  );
+  const test = filePath.join("\n file ");
+
+  await fs.writeFile(ffmpegPath, ` file ${test}`);
+
+  await execPromise(
+    `ffmpeg -f concat -safe 0 -i ${ffmpegPath} -c copy ${finalOutputPath}`
+  );
+  return { path: finalOutputPath, id: "" };
 }
