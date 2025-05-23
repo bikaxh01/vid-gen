@@ -51,30 +51,29 @@ async function main() {
   const data = {
     projectId: "123456789",
     prompt:
-      "make a video  about explaining how web works like client server and other important stuffs make the level should for begineer and intermediate the theme should be in dark and white the video should be 5 min long and that should conver all the topic in detail with example ",
-  };
+      "explain how web works  for beginner in simple terms"}
 
-  // const scenesDetail = await generateSceneDescription(data.prompt);
+  const scenesDetail = await generateSceneDescription(data.prompt);
 
-  // await prisma.project.update({
-  //   where: {
-  //     id: data.projectId,
-  //   },
-  //   data: {
-  //     sceneFlow: JSON.stringify(scenesDetail),
-  //     totalScene: scenesDetail.length,
-  //   },
-  // });
+  await prisma.project.update({
+    where: {
+      id: data.projectId,
+    },
+    data: {
+      sceneFlow: JSON.stringify(scenesDetail),
+      totalScene: scenesDetail.length,
+    },
+  });
 
-  // const compileCommands = [];
-  // for (const sceneConfig of scenesDetail) {
-  //   const scene = await generateScene(
-  //     sceneConfig,
-  //     scenesDetail,
-  //     data.projectId
-  //   );
-  //   compileCommands.push(scene);
-  // }
+  const compileCommands = [];
+  for (const sceneConfig of scenesDetail) {
+    const scene = await generateScene(
+      sceneConfig,
+      scenesDetail,
+      data.projectId
+    );
+    compileCommands.push(scene);
+  }
 
   // [
   //   {
@@ -83,15 +82,9 @@ async function main() {
   //     sceneSequence:10,
   //   },
   // ]
-  await compileScenes([
-    {
-      name: `Scene10RenderingWebPages.py`,
-      sceneId: "c7532f73-987a-4ca2-a588-bd36a80bf238",
-      sceneSequence:10,
-    },
-  ]);
+  await compileScenes(compileCommands);
 
-  //await mergeScenesAndUpload(data.projectId);
+  await mergeScenesAndUpload(data.projectId);
 }
 
 main();

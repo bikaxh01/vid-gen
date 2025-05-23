@@ -1,7 +1,7 @@
 import { SceneConfig, SceneProperties } from "./types";
 
 export function generateScenesDescriptionPrompt(userPrompt: string) {
-  const prompt = `You are a highly capable AI assistant with deep expertise in **content creation** and **scene-based script writing**. Your role is to generate a **detailed scene-by-scene description** based on a given prompt. This scene breakdown will later be used by another AI system to generate **Manim** (a Python library for creating mathematical and educational animations) code for visualization.
+  const prompt = `You are a highly capable AI assistant with deep expertise in **content creation** and **scene-based script writing**. Your role is to generate a **detailed scene-by-scene description** based on a given prompt. This scene breakdown will later be used by another AI system to generate **Manim (Community-Edition)** (a Python library for creating mathematical and educational animations) code for visualization.
     
     ---
     
@@ -9,7 +9,7 @@ export function generateScenesDescriptionPrompt(userPrompt: string) {
     1. A user provides a textual prompt enclosed within delimiters '###'.
     2. That prompt is passed to you.
     3. You return a list of detailed scene descriptions.
-    4. Another AI agent takes your response and generates Manim animation code from it.
+    4. Another AI agent takes your response and generates Manim(Community-Edition) animation code from it.
     
     ---
     
@@ -66,7 +66,7 @@ export function generateScenePrompt(
   sceneDetail: SceneConfig,
   scriptDetail: SceneConfig[]
 ) {
-  const prompt = `You are a highly capable, AI-powered Python developer with deep expertise in writing clean, optimized, and visually appealing **Manim** code. You will be provided with a list of scene configurations, but your task is to generate latest Manim code for **only one specific scene** based on the details provided under "Scene Configuration".
+  const prompt = `You are a highly capable, AI-powered Python developer with deep expertise in writing clean, optimized, and visually appealing **Manim (Community-Edition)** code. You will be provided with a list of scene configurations, but your task is to generate latest Manim (Community-Edition) code for **only one specific scene** based on the details provided under "Scene Configuration".
 
 ---
 
@@ -88,7 +88,8 @@ Note: you have  provided a empty python template you have add only this import o
 - Only generate a **Python class** for the scene:
 - The class name should contain sequence and title  of scene  EG:(01_introduction)
 - The current version of manim is v0.19.0.
-- Always generate code using the latest stable version of Manim
+- Do not user any utilities from manimgl
+- Always generate code using the latest stable version of Manim (Community-Edition)
 - Do not user color name instead use Hex code
 - Do not use any third party library
 - Ensure the class is:
@@ -118,14 +119,18 @@ Use the following details to generate your Manim scene:
 - **Visual Elements**: ${JSON.stringify(sceneDetail.visualElements)}
 
 ---
-**Reminder**: Only generate the Python class for the above scene. And add from manim import * at the top Always generate code using the latest stable version of Manim.
+**Reminder**: Only generate the Python class for the above scene. And add from manim import * at the top Always generate code using the latest stable version of Manim (Community-Edition).
 `;
 
   return prompt;
 }
 
-export function fixCodePrompt(error: string, currentCode: string) {
-  const prompt = `You are a highly capable, AI-powered Python developer with deep expertise in writing clean, optimized, and visually appealing **Manim** code. You will be provided with a manim code and error that has been occured error while compiling and you task is to fix the code and you will fixing the code do not make any theme change just fix the error and do not do any thing extra .
+export function fixCodePrompt(
+  currentError: string,
+  context: string,
+  currentCode: string
+) {
+  const prompt = `You are a highly capable, AI-powered Python developer with deep expertise in writing clean, optimized, and visually appealing **Manim (Community-Edition)** code. You will be provided with a manim code and error that has been occured error while compiling and you task is to fix the code and you will fixing the code do not make any theme change just fix the error and do not do any thing extra .
 
 ---
 
@@ -152,9 +157,10 @@ Note: you have  provided a empty python template you have add only this import o
 - The current version of manim is v0.19.0.
 - Do not user color name instead use Hex code
 - Make sure to not add any deprecated methods or class
+- Do not user any utilities from manimgl
 - Do not use any third party library
 - Do not change the class name make sure the class name should be same 
-- Always generate code using the latest stable version of Manim
+- Always generate code using the latest stable version of Manim (Community-Edition)
 - Ensure the class is:
   - Self-contained  
   - Visually engaging  
@@ -164,8 +170,11 @@ Note: you have  provided a empty python template you have add only this import o
 
 ---
 
+** This is previous error and code that has been generated by you **
+${context}
+
 **Error that has been occured while compiling the code**  
- ${error}
+ ${currentError}
 ---
 
 **Scene Code**  
@@ -176,7 +185,7 @@ ${currentCode}
 
 
 ---
-**Reminder**: Only edit  the Python class for the above scene. And add from manim import * at the top Always generate code using the latest stable version of Manim.
+**Reminder**: Only edit  the Python class for the above scene. And add from manim import * at the top Always generate code using the latest stable version of Manim (Community-Edition).
 `;
   return prompt;
 }

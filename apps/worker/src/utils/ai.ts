@@ -210,28 +210,36 @@ export async function compileScenes(file: any[]) {
 
 async function fixCode(error: any, fileMetaData: any) {
   let isError = true;
-  let updatedError = error;
+  //let updatedError = error;
   let count = 1;
-
+  const context: { error: string; code: string }[] = [
+    { error: error, code: "" },
+  ];
   while (isError) {
     if (count >= 5) {
-      console.log('Unable to fix the bug limit reached 🔴');
-      
+      console.log("Unable to fix the bug limit reached 🔴");
+
       break;
     }
     console.log(`Fixing for ${count} time the error is ${error}`);
-    
-    const { stillError, errorStr } = await fixCodeAndCompile(
-      updatedError,
+
+    const { stillError, errorStr,code } = await fixCodeAndCompile(
+      context,
       fileMetaData
     );
     isError = stillError;
-    updatedError = errorStr;
+
+    //@ts-ignore
+    context.push({ error: errorStr,code });
+    // updatedError = errorStr;
     count++;
   }
 }
 
-async function fixCodeAndCompile(error: string, fileMetaData: any) {
+async function fixCodeAndCompile(
+  errors: { error: string; code: string }[],
+  fileMetaData: any
+) {
   const filePath = path.join(
     __dirname,
     "..",
@@ -239,12 +247,22 @@ async function fixCodeAndCompile(error: string, fileMetaData: any) {
     "python",
     `${fileMetaData.name}`
   );
+const allErrorString = errors.map((obj) => {
+  return `{
+    error:${obj.error},
+    code:${obj.code}
+  }`
+}).join(", ")
+
   const currentCode = await fs.readFile(filePath, "utf-8");
   let stillError = false;
+  
+
   // pass to llm to fix the code
   const response = await ai.models.generateContent({
     model: "gemini-2.5-pro-preview-05-06",
-    contents: fixCodePrompt(error, currentCode),
+    //@ts-ignore
+    contents: fixCodePrompt(errors[errors.length - 1].error, allErrorString, currentCode),
     config: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -266,17 +284,15 @@ async function fixCodeAndCompile(error: string, fileMetaData: any) {
 
   //@ts-ignore
   const fixedCode = JSON.parse(response.text)[0].code;
-  console.log("🚀 ~ fixCodeAndCompile ~ fixedCode updating file:", fixedCode)
 
   await fs.writeFile(filePath, `\n${fixedCode}`);
 
-  
   // compile the code
   try {
     const { stdout, stderr } = await execPromise(`manim -qh ${filePath}`);
 
     if (stderr) {
-    //  console.log("🚀 ~ exec ~ stderr (warnings?):", stderr);
+      //  console.log("🚀 ~ exec ~ stderr (warnings?):", stderr);
     }
 
     await prisma.scene.update({
@@ -290,9 +306,8 @@ async function fixCodeAndCompile(error: string, fileMetaData: any) {
     console.log("Bug fixed and compiled successfully");
     return { stillError, errorStr: "" };
   } catch (error) {
-    
     stillError = true;
-    return { stillError, errorStr: error };
+    return { stillError, errorStr: error,code:fixedCode };
   }
 }
 
@@ -301,6 +316,8 @@ cloudinary.v2.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+
 export async function mergeScenesAndUpload(projectId: string) {
   console.log("Merging scenes 🟢");
 
@@ -411,7 +428,8 @@ async function mergeAllScenes(filePath: string[]) {
   const test = filePath.join("\n file ");
 
   await fs.writeFile(ffmpegPath, ` file ${test}`);
-
+  console.log(`merging using ffmpe`);
+  
   await execPromise(
     `ffmpeg -f concat -safe 0 -i ${ffmpegPath} -c copy ${finalOutputPath}`
   );
