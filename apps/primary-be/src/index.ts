@@ -11,10 +11,10 @@ import {
 } from "@clerk/express";
 import { redisClient } from "./config/redis";
 import bodyParser from "body-parser";
-import { verifyWebhook } from "@clerk/express/webhooks";
+import cors from "cors"
 config();
-
 const app = express();
+app.use(cors())
 
 app.use(bodyParser.json());
 app.use(clerkMiddleware());

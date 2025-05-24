@@ -1,7 +1,0 @@
- file 'D:\projects\video-gen\apps\worker\media\videos\S01_IntroductionToTheWeb\1080p60\S01_IntroductionToTheWeb.mp4'
- file 'D:\projects\video-gen\apps\worker\media\videos\Scene02ClientServerModel\1080p60\Scene02ClientServerModel.mp4'
- file 'D:\projects\video-gen\apps\worker\media\videos\S03_http_request_explained\1080p60\S03_http_request_explained.mp4'
- file 'D:\projects\video-gen\apps\worker\media\videos\Scene04ServerProcessing\1080p60\Scene04ServerProcessing.mp4'
- file 'D:\projects\video-gen\apps\worker\media\videos\S05_HTTPResponse\1080p60\S05_HTTPResponse.mp4'
- file 'D:\projects\video-gen\apps\worker\media\videos\Scene06_BrowserRendering\1080p60\Scene06_BrowserRendering.mp4'
- file 'D:\projects\video-gen\apps\worker\media\videos\S07_WebpageDisplayed\1080p60\S07_WebpageDisplayed.mp4'

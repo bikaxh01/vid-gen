@@ -1,64 +1,41 @@
-import { config } from "dotenv";
-import express, { Response, Request } from "express";
 import {
   compileScenes,
   generateScene,
   generateSceneDescription,
   mergeScenesAndUpload,
 } from "./utils/ai";
-import { PORT } from "./utils/env";
-import bodyParser from "body-parser";
+
 import { prisma } from "@repo/db/prismaClient.ts";
-
-config();
-const app = express();
-app.use(bodyParser.json());
-
-// app.post("/generate-video", async (req: Request, res: Response) => {
-//   // get the user prompt and project id
-//   const { prompt, userId } = req.body;
-
-//   try {
-//     if (!prompt) {
-//       res
-//         .status(401)
-//         .json({ success: false, message: "Invalid request", data: [] });
-//       return;
-//     }
-
-//     const scenesDetail = await generateSceneDescription(prompt);
-
-//     for (const sceneConfig of scenesDetail) {
-//       const scene = await generateScene(sceneConfig, scenesDetail);
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       message: "all animations are generated successfully",
-//       data: [],
-//     });
-//   } catch (error) {
-//     console.log("🚀 ~ app.post ~ error:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Error while generating",
-//       data: [],
-//     });
-//   }
-// });
+import { redisClient } from "./utils/redis";
 
 async function main() {
-  
-  const data = {
-    projectId: "123456789",
-    prompt:
-      "explain how web works  for beginner in simple terms"}
+  console.log(`listening to queue`);
+
+  while (true) {
+    try {
+      const queueData = await redisClient.BRPOP("generate-video", 0);
+      if (!queueData) continue;
+      const parsedData = JSON.parse(queueData.element);
+      console.log("🚀 ~ Data received", parsedData);
+      await generateVideo(parsedData);
+    } catch (error) {
+      console.log("🚀 ~ main ~ error:", error);
+    }
+  }
+}
+
+main();
+async function generateVideo(data: { id: string; prompt: string }) {
+  // const data = {
+  //   projectId: "123456789",
+  //   prompt:
+  //     "explain how web works  for beginner in simple terms"}
 
   const scenesDetail = await generateSceneDescription(data.prompt);
 
   await prisma.project.update({
     where: {
-      id: data.projectId,
+      id: data.id,
     },
     data: {
       sceneFlow: JSON.stringify(scenesDetail),
@@ -71,7 +48,7 @@ async function main() {
     const scene = await generateScene(
       sceneConfig,
       scenesDetail,
-      data.projectId
+      data.id
     );
     compileCommands.push(scene);
   }
@@ -85,11 +62,7 @@ async function main() {
   // ]
   await compileScenes(compileCommands);
 
-  await mergeScenesAndUpload(data.projectId);
+  await mergeScenesAndUpload(data.id);
 }
 
-main();
 
-// app.listen(PORT, () => {
-//   console.log(`Running at ${PORT}`);
-// });

@@ -1,63 +1,69 @@
 import { SceneConfig, SceneProperties } from "./types";
 
 export function generateScenesDescriptionPrompt(userPrompt: string) {
-  const prompt = `You are a highly capable AI assistant with deep expertise in **content creation** and **scene-based script writing**. Your role is to generate a **detailed scene-by-scene description** based on a given prompt. This scene breakdown will later be used by another AI system to generate **Manim (Community-Edition)** (a Python library for creating mathematical and educational animations) code for visualization.
-    
-    ---
-    
-     **Application Workflow:**
-    1. A user provides a textual prompt enclosed within delimiters '###'.
-    2. That prompt is passed to you.
-    3. You return a list of detailed scene descriptions.
-    4. Another AI agent takes your response and generates Manim(Community-Edition) animation code from it.
-    
-    ---
-    
-     **Your Task:**
-    Given the prompt (enclosed in '###'), your responsibility is to:
-    - Generate a list of **well-structured**, **visually coherent**, and **logically sequenced** scenes.
-    - Each scene should include:
-      -  **Scene Title**  
-      -  **scene sequence **
-      -  **Detailed Description** (what happens in the scene)  
-      -  **Visual and Animation Elements**: e.g., shapes, highlights, transitions  
-      -  **Color Scheme** (ensure a consistent palette across all scenes)  
-      -  **Animation Type** (e.g., fade-in, write, transform, etc.)
-    
-    ---
-    
-     **Design Guidelines:**
-    - Maintain **visual and narrative consistency** across scenes.
-    - Do **not reference or include any external libraries**—only Manim concepts.
-    - Focus on clarity, educational value, and smooth storytelling.
-    - The scene structure should be designed in a way that it’s directly convertible into animation code by another model.
-    
-    ---
-    
-    **Formatting Example (per scene):**
-    - **Scene 1: Introduction to Newton's Laws**  
-      *Description*: The title "Newton's Laws of Motion" appears at the center using a Write animation. A subtle background fade-in introduces a calm blue theme.  
-      *Animations*: 'Write', 'FadeIn'  
-      sequence: 1
-      *Color Scheme*: Light dark background, white text.  
-    
-    ---
-    
-     **Input Prompt Structure**  
-    The prompt will always be enclosed like this:
-    
-    
-    ###
-    PROMPT
-    ###
-    
-    ---
-    
-    Now generate detailed scene descriptions based on the following prompt:
-    
-    ###
-    ${userPrompt}
-    ###`;
+  const prompt = `You are a highly capable AI assistant with deep expertise in **educational content design**, **pedagogical structuring**, and **scene-based storytelling**. Your task is to take a high-level educational concept (provided within triple-hash delimiters: \`###\`) and break it down into a **clear, structured, and logically sequenced list of scenes**. These scenes are intended to be used for **Manim (Community Edition)** animations — a Python library used for crafting engaging and precise educational videos.
+
+---
+
+**System Workflow Overview**:
+1. A user provides an educational concept or topic between triple-hash delimiters (\`###\`).
+2. That input is passed to you, the AI assistant.
+3. You respond with a detailed sequence of scene configurations suitable for Manim animation.
+4. Another AI agent or script will then convert these configurations into executable Manim CE v0.19.0 code.
+
+---
+
+ **Your Goal**:
+From the provided input prompt (within \`###\`), generate a sequence of **visually engaging**, **educationally effective**, and **technically feasible** scenes, each one ready to be implemented in Manim CE.
+
+Each scene must include the following fields:
+
+- **Scene Title**  
+- **Scene Sequence** (e.g., 1, 2, 3...)  
+- **Detailed Description** – Explain what happens in the scene (what is taught, and how it's visualized).  
+- **Visual and Animation Elements** – Mention key objects like text, arrows, graphs, equations, or shapes.  
+- **Color Scheme** – Use a simple, cohesive palette (no names, use hex codes like \`#FFFFFF\`)  
+- **Animation Types** – Use Manim-supported types like \`Write\`, \`FadeIn\`, \`Transform\`, \`Create\`, etc.
+
+---
+
+ **Design & Pedagogical Guidelines**:
+- Ensure **narrative flow** across scenes: each one should build upon or transition logically from the previous.
+- **Avoid clutter**: prioritize simplicity, focus, and learner retention.
+- Be descriptive and visual: describe **exactly what should appear** and how it behaves or changes.
+- Do **not** include external libraries, media, or web references.
+- All scenes must be **standalone** and **directly convertible** to Manim CE v0.19.0 code.
+- Do **not** include any links or contact information in the final scene.
+- Maintain a consistent visual language and pacing across scenes.
+- Assume a 16:9 screen layout (1920x1080 resolution).
+- Avoid heavy or distracting transitions; clarity comes first.
+
+---
+
+**Scene Format Example**:
+
+- **Scene Title**: Introduction to Newton’s Laws  
+  *Scene Sequence*: 1  
+  *Description*: Display the title “Newton’s Laws of Motion” in the center. The background fades to a soft blue tone, creating an inviting start to the video.  
+  *Visual and Animation Elements*: Centered title text, soft background fade  
+  *Color Scheme*: #0A0A23 (background), #FFFFFF (text)  
+  *Animation Types*: Write, FadeIn
+
+---
+
+**User Input Prompt**:
+The user’s prompt will appear in the following format:
+
+\`\`\`
+###
+${userPrompt}
+###
+\`\`\`
+
+---
+
+Now, based on the prompt above, generate a complete and detailed list of scenes using the exact format and guidelines provided.`;
+
 
   return prompt;
 }
@@ -66,50 +72,83 @@ export function generateScenePrompt(
   sceneDetail: SceneConfig,
   scriptDetail: SceneConfig[]
 ) {
-  const prompt = `You are a highly capable, AI-powered Python developer with deep expertise in writing clean, optimized, and visually appealing **Manim (Community-Edition)** code. You will be provided with a list of scene configurations, but your task is to generate latest Manim (Community-Edition) code for **only one specific scene** based on the details provided under "Scene Configuration".
+const prompt = `You are an expert-level AI assistant specializing in **Python animation development** using **Manim Community Edition (v0.19.0)**. Your task is to generate Python code for a **single animation scene** based strictly on a provided configuration.
 
 ---
 
-**Your Responsibilities**:
-- Generate a **Manim scene class** for the specified scene only.
-- **Do not reference or include any details** from other scenes.
-- Make sure to not add any deprecated methods or class
-- All scenes are generated independently, so **focus only on the scene passed to you**.
+**Your Objective**:
+- Generate a **single, production-ready Manim scene class** that visually expresses the configuration described in the section titled **"Scene to Generate"**.
+- **Do not** include content or logic from other scenes listed in the broader context.
+- All visual elements, animations, and structure must adhere strictly to the configuration provided.
 
 ---
 
-Note: you have  provided a empty python template you have add only this import on top of the class 
-- from manim import *
+ **Rules and Constraints**:
+- Assume a 16:9 screen layout (1920x1080 resolution).
+- Use **only this import** at the top:
+  \`from manim import *\`
 
+- Define **only one** scene class.
 
- **Guidelines**:
-- Follow the provided **color scheme**, **animation types**, and **visual elements** precisely.
-- Do  include  import manim.
-- Only generate a **Python class** for the scene:
-- The class name should contain sequence and title  of scene  EG:(01_introduction)
-- The current version of manim is v0.19.0.
-- Do not user any utilities from manimgl
-- Always generate code using the latest stable version of Manim (Community-Edition)
-- Do not user color name instead use Hex code
-- Do not use any third party library
-- Ensure the class is:
-  - Self-contained  
-  - Visually engaging  
-  - Aligned with the description  
-  - Bug-free and production-ready
-- **Do not use** third-party libraries, external assets, or SVGs.
-- Do not add any special character like (\n)
+- The class **must follow this naming format**:
+  \`<sequence>_<PascalCaseTitle>\`  
+  Example: \`S01_IntroductionToGravity\`
+
+- The class must use only **Manim CE v0.19.0-compatible syntax**.
+
+- The code should be:
+  - Clean and efficient  
+  - Free of deprecated methods  
+  - Self-contained and runnable
+
+- **Allowed animation types**: Use only those explicitly mentioned under \`Animation Types\`.
+
+- **Allowed color codes**: Use only the hex values provided in the color scheme (e.g., \`#FFFFFF\`). Do **not** use named colors.
+
+- **Visual Elements**: Use only those described under \`Visual Elements\` — interpret and render them as accurately as possible using Manim objects (e.g., Text, MathTex, Rectangle, Arrow, etc.).
+
+- **Scene Layout**:
+  - Maintain proper spacing and alignment  
+  - Ensure all text, shapes, and transitions are **clearly visible** and **centered or well-positioned**  
+  - Avoid visual clutter
+
+- **Prohibited**:
+  - Third-party libraries  
+  - External assets (SVGs, images, fonts)  
+  - References to web links, file paths, or contacts  
+  - Deprecated utilities (e.g., from manimgl)
+
 ---
 
-**All Scene Configurations**  
-(Do not use this directly. It's for context only. Only the section below matters.)
+ **Code Class Requirements** (for Code(...)):
+When using the \`Code\` object, use only these parameters and their correct data types:
 
+\`\`\`python
+Code(
+  code_file: str | None = None,
+  code_string: str | None = None,
+  language: str | None = None,
+  formatter_style: str = "vim",
+  tab_width: int = 4,
+  add_line_numbers: bool = True,
+  line_numbers_from: int = 1,
+  background: Literal["rectangle", "window"] = "rectangle",
+  background_config: dict | None = None
+)
+\`\`\`
+
+---
+
+ **Scene Configuration Context**  
+(*Do NOT use this section directly. It is provided only for background understanding.*)
+\`\`\`
 ${scriptDetail}
+\`\`\`
 
 ---
 
-**Scene to Generate**  
-Use the following details to generate your Manim scene:
+ **Scene to Generate**  
+Use this section ONLY to build your Manim scene:
 
 - **Title**: ${sceneDetail.sceneTitle}  
 - **Sequence**: ${sceneDetail.sequence}  
@@ -119,8 +158,16 @@ Use the following details to generate your Manim scene:
 - **Visual Elements**: ${JSON.stringify(sceneDetail.visualElements)}
 
 ---
-**Reminder**: Only generate the Python class for the above scene. And add from manim import * at the top Always generate code using the latest stable version of Manim (Community-Edition).
-`;
+
+ **Final Checklist Before Output**:
+-  Only one class  
+-  Only from manim import * at the top  
+-  Strict adherence to the given scene configuration  
+-  No template code, boilerplate, or external logic  
+-  Bug-free and executable in **Manim CE v0.19.0**
+
+Begin now. Output only the Manim scene class.`;
+
 
   return prompt;
 }
@@ -130,62 +177,81 @@ export function fixCodePrompt(
   context: string,
   currentCode: string
 ) {
-  const prompt = `You are a highly capable, AI-powered Python developer with deep expertise in writing clean, optimized, and visually appealing **Manim (Community-Edition)** code. You will be provided with a manim code and error that has been occured error while compiling and you task is to fix the code and you will fixing the code do not make any theme change just fix the error and do not do any thing extra .
+ const prompt = `You are an expert AI Python developer with advanced knowledge of **Manim Community Edition (v0.19.0)**. You will be provided with a Python class representing a Manim scene, along with a compilation error. Your task is to **analyze the error and fix only what is necessary**.
 
 ---
 
-**Your Responsibilities**:
-- All scenes are generated independently, so **focus only on the scene passed to you**.
-- Fix the **provided Manim scene class** based on the error message.
-- Do **not** reference or include logic from other scenes.
-- Scenes are generated independently — focus only on the code given.
-- Do not change the class name make sure the class name should be same 
-- Do not add any special character like (\n)
-- Make sure to not add any deprecated methods or class
+ **Your Objective**:
+- Correct the **exact compilation error** provided.
+- Ensure the **rest of the scene** (theme, visuals, logic, class name) remains **untouched**.
+- Your fix should be clean, minimal, and **production-ready**.
 
 ---
 
-Note: you have  provided a empty python template you have add only this import on top of the class 
-- from manim import *
+**Strict Rules**:
 
+- Use **only this import** at the top:
+  \`from manim import *\`
 
- **Guidelines**:
-- Follow the provided **color scheme**, **animation types**, and **visual elements** precisely.
-- Do  include  import manim.
-- Only generate a **Python class** for the scene:
-- The class name should contain sequence and title  of scene  EG:(01_introduction)
-- The current version of manim is v0.19.0.
-- Do not user color name instead use Hex code
-- Make sure to not add any deprecated methods or class
-- Do not user any utilities from manimgl
-- Do not use any third party library
-- Do not change the class name make sure the class name should be same 
-- Always generate code using the latest stable version of Manim (Community-Edition)
-- Ensure the class is:
-  - Self-contained  
-  - Visually engaging  
-  - Aligned with the description  
-  - Bug-free and production-ready
-- **Do not use** third-party libraries, external assets, or SVGs.
+- Do **not**:
+  - Change the class name
+  - Add or remove visual/animation logic unless essential for the fix
+  - Use deprecated or ManimGL methods
+  - Use any third-party libraries
+  - Include external assets (SVGs, images, etc.)
+  - Use color **names** (use **hex codes only**)
+
+- Your fix **must** be:
+  - Fully compatible with **Manim CE v0.19.0**
+  - Clean, readable, and correct
+  - A **single self-contained scene class**
+
+- For Code(...) objects, the accepted signature is:
+\`\`\`python
+Code(
+  code_file: str | None = None,
+  code_string: str | None = None,
+  language: str | None = None,
+  formatter_style: str = "vim",
+  tab_width: int = 4,
+  add_line_numbers: bool = True,
+  line_numbers_from: int = 1,
+  background: Literal["rectangle", "window"] = "rectangle",
+  background_config: dict | None = None
+)
+\`\`\`
 
 ---
 
-** This is previous error and code that has been generated by you **
+**Input Details**:
+
+🔹 **Context**:
+\`\`\`
 ${context}
+\`\`\`
 
-**Error that has been occured while compiling the code**  
- ${currentError}
----
+🔹 **Compilation Error**:
+\`\`\`
+${currentError}
+\`\`\`
 
-**Scene Code**  
-
+🔹 **Scene Code**:
+\`\`\`python
 ${currentCode}
-
-
-
+\`\`\`
 
 ---
-**Reminder**: Only edit  the Python class for the above scene. And add from manim import * at the top Always generate code using the latest stable version of Manim (Community-Edition).
-`;
+
+**Final Checklist**:
+
+-  Only one class  
+-  Preserve original logic and layout  
+-  Fix **only** what causes the error  
+-  Compatible with **Manim CE v0.19.0**  
+-  Return **only** the corrected class (with \`from manim import *\` at the top) — nothing else
+
+Begin the correction now.`;
+
+
   return prompt;
 }
