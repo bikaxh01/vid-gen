@@ -1,3 +1,4 @@
+import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import React from "react";
 
@@ -9,12 +10,7 @@ function DashboardNavBar() {
       </div>
 
       <div className=" gap-4 flex items-center justify-center">
-        <Link
-          href={"/"}
-          className=" bg-[#0D80F2]  text-xs px-4 py-2 items-center flex font-semibold rounded-md"
-        >
-          Sign-In
-        </Link>
+        <UserButton />
       </div>
     </div>
   );

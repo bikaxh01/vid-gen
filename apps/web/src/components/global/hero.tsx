@@ -19,7 +19,7 @@ function HeroSection() {
             experience needed.
           </p>
           <Link
-            href={"/sign-in"}
+            href={"/dashboard"}
             className=" bg-[#0D80F2]  px-6 py-2  items-center flex font-semibold rounded-md"
           >
             Get started
@@ -125,7 +125,7 @@ function HeroSection() {
 
             <Link
               className=" bg-[#0D80F2]  text-xs px-4 py-2 items-center flex font-semibold w-fit rounded-md"
-              href={"/"}
+              href={"/dashboard"}
             >
               Start Creating
             </Link>
@@ -195,7 +195,7 @@ function HeroSection() {
           </h1>
         </div>
         <Link
-          href={"/"}
+          href={"/dashboard"}
           className=" bg-[#0D80F2]  text-xs px-4 py-2 items-center flex font-semibold rounded-md"
         >
           Try Vid-Zen Now

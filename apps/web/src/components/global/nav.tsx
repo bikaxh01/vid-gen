@@ -9,12 +9,20 @@ function NavBar() {
       </div>
 
       <div className=" gap-4 flex items-center justify-center">
-        <Link href={"/"} className=" text-xs font-semibold">Home</Link>
-        <Link href={"/"} className=" text-xs font-semibold">Features</Link>
-        <Link href={"/"} className=" text-xs font-semibold">Pricing</Link>
-        <Link href={"/"} className=" text-xs font-semibold">Resources</Link>
+        <Link href={"/"} className=" text-xs font-semibold">
+          Home
+        </Link>
+        <Link href={"/"} className=" text-xs font-semibold">
+          Features
+        </Link>
+        <Link href={"/"} className=" text-xs font-semibold">
+          Pricing
+        </Link>
+        <Link href={"/"} className=" text-xs font-semibold">
+          Resources
+        </Link>
         <Link
-          href={"/"}
+          href={"/sign-in"}
           className=" bg-[#0D80F2]  text-xs px-4 py-2 items-center flex font-semibold rounded-md"
         >
           Sign-In
