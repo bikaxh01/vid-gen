@@ -31,25 +31,22 @@ async function generateVideo(data: { id: string; prompt: string }) {
   //   prompt:
   //     "explain how web works  for beginner in simple terms"}
 
-  const scenesDetail = await generateSceneDescription(data.prompt);
+  const scenesDetail = await generateSceneDescription(data.prompt, data.id);
 
-  await prisma.project.update({
-    where: {
-      id: data.id,
-    },
-    data: {
-      sceneFlow: JSON.stringify(scenesDetail),
-      totalScene: scenesDetail.length,
-    },
-  });
+  // await prisma.project.update({
+  //   where: {
+  //     id: data.id,
+  //   },
+  //   data: {
+  //     sceneFlow: JSON.stringify(scenesDetail),
+  //     totalScene: scenesDetail.length,
+  //     status: "GENERATING_SCENES",
+  //   },
+  // });
 
   const compileCommands = [];
   for (const sceneConfig of scenesDetail) {
-    const scene = await generateScene(
-      sceneConfig,
-      scenesDetail,
-      data.id
-    );
+    const scene = await generateScene(sceneConfig, scenesDetail, data.id);
     compileCommands.push(scene);
   }
 
@@ -63,6 +60,13 @@ async function generateVideo(data: { id: string; prompt: string }) {
   await compileScenes(compileCommands);
 
   await mergeScenesAndUpload(data.id);
+  
+  // await prisma.project.update({
+  //   where: {
+  //     id: data.id,
+  //   },
+  //   data: {
+  //     status: "COMPLETED",
+  //   },
+  // });
 }
-
-

@@ -95,7 +95,20 @@ export async function generateScene(
   return metadata;
 }
 
-export async function generateSceneDescription(userPrompt: string) {
+export async function generateSceneDescription(
+  userPrompt: string,
+  projectId: string
+) {
+
+   await prisma.project.update({
+    where: {
+      id: projectId,
+    },
+    data: {
+      status: "PLAINNING",
+    },
+  });
+
   const response = await ai.models.generateContent({
     model: "gemini-2.0-flash",
     contents: generateScenesDescriptionPrompt(userPrompt),
@@ -171,9 +184,11 @@ export async function generateSceneDescription(userPrompt: string) {
     },
   });
 
+ 
+
   //@ts-ignore
   const scenesDetail: SceneConfig[] = JSON.parse(response.text);
-  console.log("Scenes Description Completed 🟢🟢");
+  console.log("Scenes Description Completed 🟢");
 
   return scenesDetail;
 }
@@ -221,16 +236,16 @@ async function fixCode(error: any, fileMetaData: any) {
 
       break;
     }
-    console.log(`Fixing for ${count} time the error is ${error}`);
+    console.log(`Fixing for ${count} time `);
 
-    const { stillError, errorStr,code } = await fixCodeAndCompile(
+    const { stillError, errorStr, code } = await fixCodeAndCompile(
       context,
       fileMetaData
     );
     isError = stillError;
 
     //@ts-ignore
-    context.push({ error: errorStr,code });
+    context.push({ error: errorStr, code });
     // updatedError = errorStr;
     count++;
   }
@@ -247,22 +262,28 @@ async function fixCodeAndCompile(
     "python",
     `${fileMetaData.name}`
   );
-const allErrorString = errors.map((obj) => {
-  return `{
+  const allErrorString = errors
+    .map((obj) => {
+      return `{
     error:${obj.error},
     code:${obj.code}
-  }`
-}).join(", ")
+  }`;
+    })
+    .join(", ");
 
   const currentCode = await fs.readFile(filePath, "utf-8");
   let stillError = false;
-  
 
   // pass to llm to fix the code
   const response = await ai.models.generateContent({
     model: "gemini-2.5-pro-preview-05-06",
     //@ts-ignore
-    contents: fixCodePrompt(errors[errors.length - 1].error, allErrorString, currentCode),
+    contents: fixCodePrompt(
+      //@ts-ignore
+      errors[errors.length - 1].error,
+      allErrorString,
+      currentCode
+    ),
     config: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -307,7 +328,7 @@ const allErrorString = errors.map((obj) => {
     return { stillError, errorStr: "" };
   } catch (error) {
     stillError = true;
-    return { stillError, errorStr: error,code:fixedCode };
+    return { stillError, errorStr: error, code: fixedCode };
   }
 }
 
@@ -316,7 +337,6 @@ cloudinary.v2.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
 
 export async function mergeScenesAndUpload(projectId: string) {
   console.log("Merging scenes 🟢");
@@ -429,7 +449,7 @@ async function mergeAllScenes(filePath: string[]) {
 
   await fs.writeFile(ffmpegPath, ` file ${test}`);
   console.log(`merging using ffmpe`);
-  
+
   await execPromise(
     `ffmpeg -f concat -safe 0 -i ${ffmpegPath} -c copy ${finalOutputPath}`
   );

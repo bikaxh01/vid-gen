@@ -2,14 +2,37 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@clerk/nextjs";
 import axios from "axios";
-import React, { useState } from "react";
+import { actionAsyncStorage } from "next/dist/server/app-render/action-async-storage.external";
+import React, { useEffect, useState } from "react";
 
 const SERVER_BASE_URL = "http://localhost:3002";
 
 function PromptComponent() {
   const [prompt, setPrompt] = useState("");
+  const [pendingProject, setPendingProject] = useState<{ id: string } | null>();
+  const [currentStatus, setCurrentStatus] = useState("");
   const { getToken } = useAuth();
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (pendingProject) {
+      const getPendingProjectStatus = async () => {
+        const res = await axios.get(
+          `${SERVER_BASE_URL}/get-project-status?projectId=${pendingProject.id}`
+        );
+
+        if (res.data.data.status === "COMPLETED") {
+          setCurrentStatus("");
+          setPendingProject(null);
+          return;
+        }
+
+        setCurrentStatus(res.data.data.status);
+      };
+      const intervalId = setInterval(getPendingProjectStatus, 30000);
+      return () => clearInterval(intervalId);
+    }
+  }, [pendingProject]);
 
   const handleSubmit = async () => {
     try {
@@ -24,6 +47,7 @@ function PromptComponent() {
           },
         }
       );
+      setPendingProject(res.data.data);
     } catch (error) {
       console.log("🚀 ~ handleSubmit ~ error:", error);
     } finally {
@@ -55,9 +79,11 @@ function PromptComponent() {
             </Button>
           </div>
         </div>
-        <div className=" w-[40%] h-[16rem]  rounded-md">
-          video processing here
-        </div>
+        {pendingProject && (
+          <div className=" w-[40%] h-[16rem] flex items-center justify-center outline  rounded-md">
+            {currentStatus || "Generating"}
+          </div>
+        )}
       </div>
     </div>
   );

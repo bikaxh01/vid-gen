@@ -11,10 +11,10 @@ import {
 } from "@clerk/express";
 import { redisClient } from "./config/redis";
 import bodyParser from "body-parser";
-import cors from "cors"
+import cors from "cors";
 config();
 const app = express();
-app.use(cors())
+app.use(cors());
 
 app.use(bodyParser.json());
 app.use(clerkMiddleware());
@@ -82,6 +82,40 @@ app.post(
   }
 );
 
+app.get("/get-project-status", async (req: Request, res: Response) => {
+  try {
+    const { projectId } = req.query;
+
+    if (!projectId || typeof projectId !== "string") {
+      res.json({
+        success: false,
+        message: "Invalid projectId",
+      });
+      return;
+    }
+
+    const project = await prisma.project.findUnique({
+      where: {
+        id: projectId,
+      },
+      select: {
+        status: true,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: "Fetched status",
+      data: project,
+    });
+  } catch (error) {
+    console.log("🚀 ~ app.get ~ error:", error);
+    res.status(500).json({
+      message: "Internal serer error",
+    });
+  }
+});
+
 app.post("/webhook-clerk", async (req: Request, res: Response) => {
   try {
     const webhookSecret = process.env.CLERK_WEBHOOK_SIGNING_SECRET as string;
@@ -101,12 +135,11 @@ app.post("/webhook-clerk", async (req: Request, res: Response) => {
       res.status(400).send("Error verifying webhook");
       return;
     }
-    
+
     const wh = new Webhook(webhookSecret);
-    
+
     //@ts-ignore
     const data = wh.verify(JSON.stringify(payload), header);
-   
 
     await prisma.user.create({
       data: {
